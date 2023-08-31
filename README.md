@@ -3,7 +3,7 @@
 ## 使用方法
 
 #### データはJson形式
-##### *注意：localhostなので、cloneして個人のPCで立ち上げないとつながらない*
+#### *注意：localhostなので、cloneして個人のPCで立ち上げないとつながらない*
 ### 料理の一覧取得
 
 #### GETリクエスト URL:http://localhost:4040/food
