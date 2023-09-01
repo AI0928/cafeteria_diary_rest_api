@@ -58,6 +58,16 @@ type EmployeeFoodJoin struct {
 	Date         string  `json:"date"`
 }
 
+type Mission struct {
+	ID          int    `json:"id" param:"mission_id"`
+	EmployeeID  int    `json:"employee_id" param:"employee_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	StartDate   string `json:"start_date"`
+	EndDate     string `json:"end_date"`
+	Status      string `json:"status"`
+}
+
 func (EmployeeFood) TableName() string {
 	return "employee_food"
 }
@@ -130,6 +140,51 @@ func getEmployeeHealth(c echo.Context) error {
 	return c.JSON(http.StatusOK, employeeHealthJoin)
 }
 
+func getMissions(c echo.Context) error {
+	missions := []Mission{}
+	database.DB.Find(&missions)
+	return c.JSON(http.StatusOK, missions)
+}
+
+func getMission(c echo.Context) error {
+	mission := Mission{}
+	if err := c.Bind(&mission); err != nil {
+		return err
+	}
+	database.DB.Take(&mission)
+	return c.JSON(http.StatusOK, mission)
+}
+
+func getEmployeeMissions(c echo.Context) error {
+	missions := []Mission{}
+	database.DB.Table("missions").Select("id, employee_id, name,description, start_date, end_date, status").Where("employee_id = ?", c.Param("employee_id")).Scan(&missions)
+	return c.JSON(http.StatusOK, missions)
+}
+
+func updateMission(c echo.Context) error {
+	mission := Mission{}
+	if err := c.Bind(&mission); err != nil {
+		return err
+	}
+	database.DB.Save(&mission)
+	return c.JSON(http.StatusOK, mission)
+}
+
+func createMission(c echo.Context) error {
+	mission := Mission{}
+	if err := c.Bind(&mission); err != nil {
+		return err
+	}
+	database.DB.Create(&mission)
+	return c.JSON(http.StatusCreated, mission)
+}
+
+func deleteMission(c echo.Context) error {
+	id := c.Param("mission_id")
+	database.DB.Delete(&Mission{}, id)
+	return c.NoContent(http.StatusNoContent)
+}
+
 func main() {
 	e := echo.New()
 	database.Connect()
@@ -148,6 +203,13 @@ func main() {
 	e.GET("/employee", getEmployees)
 
 	e.GET("/employeehealths/:employee_id", getEmployeeHealth)
+
+	e.GET("/mission", getMissions)
+	e.GET("/mission/:employee_id", getEmployeeMissions)
+	e.GET("/mission/:employee_id/:mission_id", getMission)
+	e.PUT("/mission/:employee_id/:mission_id", updateMission)
+	e.POST("/mission", createMission)
+	e.DELETE("/mission/:mission_id", deleteMission)
 
 	e.Logger.Fatal(e.Start(":4000")) // コンテナ側の開放ポートと一緒にすること
 }

@@ -7,7 +7,7 @@ CREATE TABLE foods (
   `protein`  DECIMAL(5, 1),
   `lipid`  DECIMAL(5, 1),
   `cholesterol`  DECIMAL(5, 1),
-  `carbohydrates` DECIMAL(5, 1) ,
+  `carbohydrates` DECIMAL(5, 1)
   PRIMARY KEY (`id`)
 );
 
