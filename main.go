@@ -75,6 +75,7 @@ func (EmployeeFood) TableName() string {
 func getFoods(c echo.Context) error {
 	foods := []Food{}
 	database.DB.Find(&foods)
+	print(foods)
 	return c.JSON(http.StatusOK, foods)
 }
 
@@ -115,6 +116,12 @@ func getEmployeeFood(c echo.Context) error {
 	employee_id, _ := strconv.Atoi(c.Param("employee_id"))
 	employeeFoodJoin := []EmployeeFoodJoin{}
 	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.cholesterol, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Where("employee_food.employee_id = ?", employee_id).Scan(&employeeFoodJoin)
+	return c.JSON(http.StatusOK, employeeFoodJoin)
+}
+
+func getEmployeeFoods(c echo.Context) error {
+	employeeFoodJoin := []EmployeeFoodJoin{}
+	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.cholesterol, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Scan(&employeeFoodJoin)
 	return c.JSON(http.StatusOK, employeeFoodJoin)
 }
 
@@ -185,6 +192,25 @@ func deleteMission(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// func fromPython() {
+// 	//result, _ := exec.Command("python3", "recomend.py", "-t", "HiguchiIchiyo").Output()
+// 	cmd := exec.Command("python3", "--version")
+// 	result, err := cmd.Output()
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 	} else {
+// 		fmt.Println("Output:", string(result))
+// 	}
+
+// 	cmd2 := exec.Command("python3", "recomend.py", "-t", "HiguchiIchiyo")
+// 	result2, err := cmd2.Output()
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 	} else {
+// 		fmt.Println("Output:", string(result2))
+// 	}
+// }
+
 func main() {
 	e := echo.New()
 	database.Connect()
@@ -198,6 +224,7 @@ func main() {
 	e.DELETE("/food/:id", deleteFood)
 
 	e.GET("/employeefood/:employee_id", getEmployeeFood)
+	e.GET("/employeefood", getEmployeeFoods)
 	e.POST("/employeefood", createEmployeeFood)
 
 	e.GET("/employee", getEmployees)

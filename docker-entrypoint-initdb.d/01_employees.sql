@@ -9,6 +9,6 @@ CREATE TABLE employees (
 );
 
 INSERT INTO employees (name, age, gender) VALUES
-    ('Itou Hirobumi', 30, 'male'),
-    ('Higuchi Ichiyo', 25, 'female'),
-    ('Noguchi Hideyo', 40, 'male');
+    ('ItouHirobumi', 30, 'male'),
+    ('HiguchiIchiyo', 25, 'female'),
+    ('NoguchiHideyo', 40, 'male');
