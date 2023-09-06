@@ -68,8 +68,50 @@ type Mission struct {
 	Status      string `json:"status"`
 }
 
+type Post struct {
+	ID         int    `json:"id" param:"id"`
+	EmployeeID int    `json:"employee_id" param:"employee_id"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	CreatedAt  string `json:"created_at"`
+}
+
+type Match struct {
+	Id          int    `json:"id" param:"id"`
+	EmployeeId  int    `json:"employee_id" param:"employee_id"`
+	GroupId     int    `json:"group_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Date        string `json:"date"`
+	Status      string `json:"status"`
+}
+
+type EmployeeMatch struct {
+	Id         int `json:"id" param:"id"`
+	EmployeeId int `json:"employee_id" param:"employee_id"`
+	GroupId    int `json:"group_id" param:"group_id"`
+}
+
+type EmployeesMatchesJoin struct {
+	Id           int    `json:"id" param:"id"`
+	MatchId      int    `json:"match_id" param:"match_id"`
+	OwnerId      int    `json:"owner_id" param:"owner_id"`
+	OwnerName    string `json:"owner_name"`
+	EmployeeId   int    `json:"employee_id" param:"employee_id"`
+	EmployeeName string `json:"employee_name"`
+	GroupId      int    `json:"group_id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Date         string `json:"date"`
+	Status       string `json:"status"`
+}
+
 func (EmployeeFood) TableName() string {
 	return "employee_food"
+}
+
+func (EmployeeMatch) TableName() string {
+	return "employees_matches"
 }
 
 func getFoods(c echo.Context) error {
@@ -192,51 +234,160 @@ func deleteMission(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// func fromPython() {
-// 	//result, _ := exec.Command("python3", "recomend.py", "-t", "HiguchiIchiyo").Output()
-// 	cmd := exec.Command("python3", "--version")
-// 	result, err := cmd.Output()
-// 	if err != nil {
-// 		fmt.Println("Error:", err)
-// 	} else {
-// 		fmt.Println("Output:", string(result))
-// 	}
+func getPosts(c echo.Context) error {
+	posts := []Post{}
+	database.DB.Find(&posts)
+	print(posts)
+	return c.JSON(http.StatusOK, posts)
+}
 
-// 	cmd2 := exec.Command("python3", "recomend.py", "-t", "HiguchiIchiyo")
-// 	result2, err := cmd2.Output()
-// 	if err != nil {
-// 		fmt.Println("Error:", err)
-// 	} else {
-// 		fmt.Println("Output:", string(result2))
-// 	}
-// }
+func getPost(c echo.Context) error {
+	post := Post{}
+	if err := c.Bind(&post); err != nil {
+		return err
+	}
+	database.DB.Take(&post)
+	return c.JSON(http.StatusOK, post)
+}
+
+func updatePost(c echo.Context) error {
+	post := Post{}
+	if err := c.Bind(&post); err != nil {
+		return err
+	}
+	database.DB.Save(&post)
+	return c.JSON(http.StatusOK, post)
+}
+
+func createPost(c echo.Context) error {
+	post := Post{}
+	if err := c.Bind(&post); err != nil {
+		return err
+	}
+	database.DB.Create(&post)
+	return c.JSON(http.StatusCreated, post)
+}
+
+func deletePost(c echo.Context) error {
+	id := c.Param("id")
+	database.DB.Delete(&Post{}, id)
+	return c.NoContent(http.StatusNoContent)
+}
+
+func getMatches(c echo.Context) error {
+	matches := []Match{}
+	database.DB.Find(&matches)
+	return c.JSON(http.StatusOK, matches)
+}
+
+func createMatch(c echo.Context) error {
+	match := Match{}
+	if err := c.Bind(&match); err != nil {
+		return err
+	}
+	database.DB.Create(&match)
+	return c.JSON(http.StatusCreated, match)
+}
+
+func updateMatch(c echo.Context) error {
+	match := Match{}
+	if err := c.Bind(&match); err != nil {
+		return err
+	}
+	database.DB.Save(&match)
+	return c.JSON(http.StatusOK, match)
+}
+
+func deleteMatch(c echo.Context) error {
+	id := c.Param("id")
+	database.DB.Delete(&Match{}, id)
+	return c.NoContent(http.StatusNoContent)
+}
+
+func getEmployeeMatch(c echo.Context) error {
+	employeeMatch := []EmployeeMatch{}
+	database.DB.Find(&employeeMatch)
+	return c.JSON(http.StatusOK, employeeMatch)
+}
+
+func createEmployeeMatch(c echo.Context) error {
+	employeeMatch := EmployeeMatch{}
+	if err := c.Bind(&employeeMatch); err != nil {
+		return err
+	}
+	database.DB.Create(&employeeMatch)
+	return c.JSON(http.StatusCreated, employeeMatch)
+}
+
+func updateEmployeeMatch(c echo.Context) error {
+	employeeMatch := EmployeeMatch{}
+	if err := c.Bind(&employeeMatch); err != nil {
+		return err
+	}
+	database.DB.Save(&employeeMatch)
+	return c.JSON(http.StatusOK, employeeMatch)
+}
+
+func deleteEmployeeMatch(c echo.Context) error {
+	id := c.Param("id")
+	database.DB.Delete(&Match{}, id)
+	return c.NoContent(http.StatusNoContent)
+}
+
+func getEmployeesMatchesJoin(c echo.Context) error {
+	employeesMatchesJoin := []EmployeesMatchesJoin{}
+	database.DB.Table("employees_matches").Select("employees_matches.id, matches.id AS match_id, matches.employee_id AS owner_id, employees_owner.name AS owner_name, employees_matches.employee_id, employees.name AS employee_name, employees_matches.group_id, matches.name, matches.description, matches.date, matches.status").Joins("JOIN employees ON employees_matches.employee_id = employees.id").Joins("JOIN matches ON employees_matches.group_id = matches.group_id").Joins("JOIN employees AS employees_owner ON matches.employee_id = employees_owner.id").Scan(&employeesMatchesJoin)
+	return c.JSON(http.StatusOK, employeesMatchesJoin)
+}
 
 func main() {
 	e := echo.New()
 	database.Connect()
 	sqlDB, _ := database.DB.DB()
 	defer sqlDB.Close()
-
+	//料理
 	e.GET("/food", getFoods)
 	e.GET("/food/:id", getFood)
 	e.PUT("/food/:id", updateFood)
 	e.POST("/food", createFood)
 	e.DELETE("/food/:id", deleteFood)
-
+	//社員―料理
 	e.GET("/employeefood/:employee_id", getEmployeeFood)
 	e.GET("/employeefood", getEmployeeFoods)
 	e.POST("/employeefood", createEmployeeFood)
-
+	//社員
 	e.GET("/employee", getEmployees)
 
+	//社員―健康診断
 	e.GET("/employeehealths/:employee_id", getEmployeeHealth)
 
+	//ミッション
 	e.GET("/mission", getMissions)
 	e.GET("/mission/:employee_id", getEmployeeMissions)
 	e.GET("/mission/:employee_id/:mission_id", getMission)
 	e.PUT("/mission/:employee_id/:mission_id", updateMission)
 	e.POST("/mission", createMission)
 	e.DELETE("/mission/:mission_id", deleteMission)
+
+	//POST
+	e.GET("/post", getPosts)
+	e.GET("/post/:id", getPost)
+	e.PUT("/post/:id", updatePost)
+	e.POST("/post", createPost)
+	e.DELETE("/post/:id", deletePost)
+
+	//マッチング・グループ
+	e.GET("/match", getMatches)
+	e.PUT("/match/:id", updateMatch)
+	e.POST("/match", createMatch)
+	e.DELETE("/match/:id", deleteMatch)
+	//
+	e.GET("/group", getEmployeeMatch)
+	e.PUT("/group/:id", updateEmployeeMatch)
+	e.POST("/group", createEmployeeMatch)
+	e.DELETE("/group/:id", deleteEmployeeMatch)
+	//
+	e.GET("/groupmatch", getEmployeesMatchesJoin)
 
 	e.Logger.Fatal(e.Start(":4000")) // コンテナ側の開放ポートと一緒にすること
 }
