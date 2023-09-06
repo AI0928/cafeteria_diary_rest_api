@@ -6,11 +6,17 @@ CREATE TABLE foods (
   `energy` DECIMAL(5, 1),
   `protein`  DECIMAL(5, 1),
   `lipid`  DECIMAL(5, 1),
-  `cholesterol`  DECIMAL(5, 1),
-  `carbohydrates` DECIMAL(5, 1)
+  `carbohydrates` DECIMAL(5, 1),
   PRIMARY KEY (`id`)
 );
 
 
-INSERT INTO foods (name, energy, protein, lipid, cholesterol, carbohydrates) VALUES ('apple', 52.0, 0.3, 0.2, 0.0, 14.0);
-INSERT INTO foods (name, energy, protein, lipid, cholesterol, carbohydrates) VALUES ('banana', 89.0, 1.1, 0.3, 0.0, 23.9);
+INSERT INTO foods (name, energy, protein, lipid, carbohydrates) 
+VALUES ('鯖の味噌煮', 420.0, 32.6, 27.8, 13.2),
+       ('カツカレー', 1024, 26.95, 46.98, 134.39),
+       ('醤油ラーメン', 432, 21.13, 8.64, 72.49),
+       ('ポテトサラダ', 100, 2.94, 6.85, 9.98),
+       ('うどん', 	219, 5.98, 0.92, 49.68),
+       ('豆腐ハンバーグ', 228, 17.98, 15.82, 5.4),
+       ('鮭のムニエル', 211, 18.67, 13.21, 5.97),
+       ('ピザ', 842, 40.38, 35.72, 97.7);

@@ -15,7 +15,6 @@ type Food struct {
 	Energy        float64 `json:"energy"`
 	Protein       float64 `json:"protein"`
 	Lipid         float64 `json:"lipid"`
-	Cholesterol   float64 `json:"cholesterol"`
 	Carbohydrates float64 `json:"carbohybrates"`
 }
 
@@ -53,7 +52,6 @@ type EmployeeFoodJoin struct {
 	Energy       float64 `json:"energy"`
 	Protein      float64 `json:"protein"`
 	Lipid        float64 `json:"lipid"`
-	Cholesterol  float64 `json:"cholesterol"`
 	Carbohydrate float64 `json:"carbohydrate"`
 	Date         string  `json:"date"`
 }
@@ -157,13 +155,13 @@ func deleteFood(c echo.Context) error {
 func getEmployeeFood(c echo.Context) error {
 	employee_id, _ := strconv.Atoi(c.Param("employee_id"))
 	employeeFoodJoin := []EmployeeFoodJoin{}
-	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.cholesterol, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Where("employee_food.employee_id = ?", employee_id).Scan(&employeeFoodJoin)
+	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Where("employee_food.employee_id = ?", employee_id).Scan(&employeeFoodJoin)
 	return c.JSON(http.StatusOK, employeeFoodJoin)
 }
 
 func getEmployeeFoods(c echo.Context) error {
 	employeeFoodJoin := []EmployeeFoodJoin{}
-	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.cholesterol, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Scan(&employeeFoodJoin)
+	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Scan(&employeeFoodJoin)
 	return c.JSON(http.StatusOK, employeeFoodJoin)
 }
 
@@ -280,6 +278,15 @@ func getMatches(c echo.Context) error {
 	return c.JSON(http.StatusOK, matches)
 }
 
+// func getMatch(c echo.Context) error {
+// 	match := Match{}
+// 	if err := c.Bind(&match); err != nil {
+// 		return err
+// 	}
+// 	database.DB.Take(&match)
+// 	return c.JSON(http.StatusOK, match)
+// }
+
 func createMatch(c echo.Context) error {
 	match := Match{}
 	if err := c.Bind(&match); err != nil {
@@ -334,9 +341,16 @@ func deleteEmployeeMatch(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func getEmployeesMatchesJoin(c echo.Context) error {
+func getEmployeesMatchesJoins(c echo.Context) error {
 	employeesMatchesJoin := []EmployeesMatchesJoin{}
 	database.DB.Table("employees_matches").Select("employees_matches.id, matches.id AS match_id, matches.employee_id AS owner_id, employees_owner.name AS owner_name, employees_matches.employee_id, employees.name AS employee_name, employees_matches.group_id, matches.name, matches.description, matches.date, matches.status").Joins("JOIN employees ON employees_matches.employee_id = employees.id").Joins("JOIN matches ON employees_matches.group_id = matches.group_id").Joins("JOIN employees AS employees_owner ON matches.employee_id = employees_owner.id").Scan(&employeesMatchesJoin)
+	return c.JSON(http.StatusOK, employeesMatchesJoin)
+}
+
+func getEmployeesMatchesJoin(c echo.Context) error {
+	employee_id, _ := strconv.Atoi(c.Param("employee_id"))
+	employeesMatchesJoin := []EmployeesMatchesJoin{}
+	database.DB.Table("employees_matches").Select("employees_matches.id, matches.id AS match_id, matches.employee_id AS owner_id, employees_owner.name AS owner_name, employees_matches.employee_id, employees.name AS employee_name, employees_matches.group_id, matches.name, matches.description, matches.date, matches.status").Joins("JOIN employees ON employees_matches.employee_id = employees.id").Joins("JOIN matches ON employees_matches.group_id = matches.group_id").Joins("JOIN employees AS employees_owner ON matches.employee_id = employees_owner.id").Where("employees_matches.employee_id = ?", employee_id).Scan(&employeesMatchesJoin)
 	return c.JSON(http.StatusOK, employeesMatchesJoin)
 }
 
@@ -378,6 +392,7 @@ func main() {
 
 	//マッチング・グループ
 	e.GET("/match", getMatches)
+	//e.GET("/match/:employee_id", getMatch)
 	e.PUT("/match/:id", updateMatch)
 	e.POST("/match", createMatch)
 	e.DELETE("/match/:id", deleteMatch)
@@ -387,7 +402,8 @@ func main() {
 	e.POST("/group", createEmployeeMatch)
 	e.DELETE("/group/:id", deleteEmployeeMatch)
 	//
-	e.GET("/groupmatch", getEmployeesMatchesJoin)
+	e.GET("/groupmatch", getEmployeesMatchesJoins)
+	e.GET("/groupmatch/:employee_id", getEmployeesMatchesJoin)
 
 	e.Logger.Fatal(e.Start(":4000")) // コンテナ側の開放ポートと一緒にすること
 }
