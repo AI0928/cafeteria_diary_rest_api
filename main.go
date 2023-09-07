@@ -16,13 +16,15 @@ type Food struct {
 	Protein       float64 `json:"protein"`
 	Lipid         float64 `json:"lipid"`
 	Carbohydrates float64 `json:"carbohybrates"`
+	Salinity      float64 `json:"salinity"`
 }
 
 type Employee struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Age    int    `json:"age"`
-	Gender string `json:"gender"`
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Age     int    `json:"age"`
+	Gender  string `json:"gender"`
+	Mileage int    `json:"mileage"`
 }
 
 type EmployeeHealthJoin struct {
@@ -53,6 +55,7 @@ type EmployeeFoodJoin struct {
 	Protein      float64 `json:"protein"`
 	Lipid        float64 `json:"lipid"`
 	Carbohydrate float64 `json:"carbohydrate"`
+	Salinity     float64 `json:"salinity"`
 	Date         string  `json:"date"`
 }
 
@@ -155,13 +158,13 @@ func deleteFood(c echo.Context) error {
 func getEmployeeFood(c echo.Context) error {
 	employee_id, _ := strconv.Atoi(c.Param("employee_id"))
 	employeeFoodJoin := []EmployeeFoodJoin{}
-	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Where("employee_food.employee_id = ?", employee_id).Scan(&employeeFoodJoin)
+	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.carbohydrates, foods.salinity, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Where("employee_food.employee_id = ?", employee_id).Scan(&employeeFoodJoin)
 	return c.JSON(http.StatusOK, employeeFoodJoin)
 }
 
 func getEmployeeFoods(c echo.Context) error {
 	employeeFoodJoin := []EmployeeFoodJoin{}
-	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.carbohydrates, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Scan(&employeeFoodJoin)
+	database.DB.Table("employee_food").Select("employee_food.employee_id, employees.name AS employee_name, employee_food.food_id, foods.name AS food_name, foods.energy, foods.protein, foods.lipid, foods.carbohydrates, foods.salinity, employee_food.date").Joins("JOIN employees ON employee_food.employee_id = employees.id").Joins("JOIN foods ON employee_food.food_id = foods.id").Scan(&employeeFoodJoin)
 	return c.JSON(http.StatusOK, employeeFoodJoin)
 }
 
