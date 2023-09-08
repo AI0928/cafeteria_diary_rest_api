@@ -448,7 +448,7 @@ func getEmployeeTags(c echo.Context) error {
 func getMatchTags(c echo.Context) error {
 	machtagjoin := []MatchTagJoin{}
 	database.DB.Table("employees_tags").Select("employees_tags.id, matche_id, matches.name AS matche_name, tags_id, tags.name AS tags_name, tags.point").Joins("JOIN matches ON employees_tags.matche_id = matches.id").Joins("JOIN tags ON employees_tags.tags_id = tags.id").Scan(&machtagjoin)
-	fmt.Print(machtagjoin)
+	//fmt.Print(machtagjoin)
 	return c.JSON(http.StatusOK, machtagjoin)
 }
 
@@ -490,7 +490,7 @@ func main() {
 
 	//マッチング・グループ
 	e.GET("/match", getMatches)
-	//e.GET("/match/:employee_id", getMatch)
+
 	e.PUT("/match/:id", updateMatch)
 	e.POST("/match", createMatch)
 	e.DELETE("/match/:id", deleteMatch)
