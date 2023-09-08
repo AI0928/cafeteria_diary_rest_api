@@ -7,6 +7,8 @@ CREATE TABLE employee_food (
     PRIMARY KEY (`employee_id`, `food_id`, `date`)
 );
 
+alter table employee_food default character set utf8mb4;
+
 INSERT INTO employee_food (employee_id, food_id, date) VALUES
     (1, 1, '2022-01-01'),
     (1, 2, '2022-01-02'),

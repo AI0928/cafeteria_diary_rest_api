@@ -2,15 +2,18 @@ package main
 
 import (
 	"hack_aichi/database"
+	"math/rand"
 	"strconv"
+	"time"
 
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 type Food struct {
-	Id            int     `json:"id" param:"id"`
+	Id            int     `json:"id"`
 	Name          string  `json:"name"`
 	Energy        float64 `json:"energy"`
 	Protein       float64 `json:"protein"`
@@ -20,7 +23,7 @@ type Food struct {
 }
 
 type Employee struct {
-	ID      int    `json:"id"`
+	ID      int    `json:"id" param:"employee_id"`
 	Name    string `json:"name"`
 	Age     int    `json:"age"`
 	Gender  string `json:"gender"`
@@ -60,13 +63,13 @@ type EmployeeFoodJoin struct {
 }
 
 type Mission struct {
-	ID          int    `json:"id" param:"mission_id"`
-	EmployeeID  int    `json:"employee_id" param:"employee_id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	StartDate   string `json:"start_date"`
-	EndDate     string `json:"end_date"`
-	Status      string `json:"status"`
+	ID          int     `json:"id" param:"mission_id"`
+	EmployeeID  int     `json:"employee_id" param:"employee_id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	CheckItem   string  `json:"check_item"`
+	Level       float64 `json:"level"`
+	Status      string  `json:"status"`
 }
 
 type Post struct {
@@ -107,6 +110,35 @@ type EmployeesMatchesJoin struct {
 	Status       string `json:"status"`
 }
 
+type GachaResult struct {
+	Gacha         int      `json:"gacha"`
+	AfterEmployee Employee `json:"Employee"`
+}
+
+type Tag struct {
+	ID    int    `json:"id" param:"tags_id"`
+	Name  string `json:"name"`
+	Point int    `json:"Point"`
+}
+
+type EmployeeTagJoin struct {
+	ID           int    `json:"id" param:"id"`
+	EmployeeID   int    `json:"employee_id" param:"employee_id"`
+	EmployeeName string `json:"employe_name"`
+	TagsID       int    `json:"tags_id" param:"tags_id"`
+	TagsName     string `json:"tags_name"`
+	Point        int    `json:"Point"`
+}
+
+type MatchTagJoin struct {
+	ID         int    `json:"id" param:"id"`
+	MatcheID   int    `json:"matche_id" param:"matche_id"`
+	MatcheName string `json:"matche_name"`
+	TagsID     int    `json:"tags_id" param:"tags_id"`
+	TagsName   string `json:"tags_name"`
+	Point      int    `json:"Point"`
+}
+
 func (EmployeeFood) TableName() string {
 	return "employee_food"
 }
@@ -118,7 +150,6 @@ func (EmployeeMatch) TableName() string {
 func getFoods(c echo.Context) error {
 	foods := []Food{}
 	database.DB.Find(&foods)
-	print(foods)
 	return c.JSON(http.StatusOK, foods)
 }
 
@@ -174,6 +205,37 @@ func createEmployeeFood(c echo.Context) error {
 		return err
 	}
 	database.DB.Create(&employeeFood)
+
+	food := Food{}
+	database.DB.Table("foods").Where("id = ?", employeeFood.FoodID).Scan(&food)
+
+	mission := Mission{}
+	database.DB.Table("missions").Where("employee_id = ?", employeeFood.EmployeeID).Where("status = ?", "Active").Scan(&mission)
+
+	food_level := 0.0
+	switch mission.CheckItem {
+	case "salinity":
+		food_level = food.Salinity
+	case "energy":
+		food_level = food.Energy
+	default:
+		// その他の場合
+	}
+
+	if food_level <= mission.Level {
+		fmt.Println("ミッション成功")
+		mission.Status = "succes"
+
+		employee := Employee{}
+		database.DB.Table("employees").Where("id = ?", employeeFood.EmployeeID).Scan(&employee)
+		employee.Mileage += 1
+		database.DB.Save(&employee)
+	} else {
+		fmt.Println("ミッション失敗")
+		mission.Status = "failed"
+	}
+
+	database.DB.Save(&mission)
 	return c.JSON(http.StatusCreated, employeeFood)
 }
 
@@ -207,7 +269,7 @@ func getMission(c echo.Context) error {
 
 func getEmployeeMissions(c echo.Context) error {
 	missions := []Mission{}
-	database.DB.Table("missions").Select("id, employee_id, name,description, start_date, end_date, status").Where("employee_id = ?", c.Param("employee_id")).Scan(&missions)
+	database.DB.Table("missions").Where("employee_id = ?", c.Param("employee_id")).Scan(&missions)
 	return c.JSON(http.StatusOK, missions)
 }
 
@@ -279,6 +341,20 @@ func getMatches(c echo.Context) error {
 	matches := []Match{}
 	database.DB.Find(&matches)
 	return c.JSON(http.StatusOK, matches)
+}
+
+func getGacha(c echo.Context) error {
+	gacharesult := GachaResult{}
+	rand.Seed(time.Now().UnixNano())
+	gacharesult.Gacha = rand.Intn(10)
+	employee := Employee{}
+	database.DB.Table("employees").Where("id = ?", c.Param("employee_id")).Scan(&employee)
+	employee.Mileage += gacharesult.Gacha
+	//fmt.Println("ガチャ結果:", gacharesult.Gacha)
+	//fmt.Println("Mileage:", employee.Mileage)
+	gacharesult.AfterEmployee = employee
+	database.DB.Save(&employee)
+	return c.JSON(http.StatusOK, gacharesult)
 }
 
 // func getMatch(c echo.Context) error {
@@ -357,6 +433,25 @@ func getEmployeesMatchesJoin(c echo.Context) error {
 	return c.JSON(http.StatusOK, employeesMatchesJoin)
 }
 
+func getTags(c echo.Context) error {
+	tags := []Tag{}
+	database.DB.Find(&tags)
+	return c.JSON(http.StatusOK, tags)
+}
+
+func getEmployeeTags(c echo.Context) error {
+	employeetagjoin := []EmployeeTagJoin{}
+	database.DB.Table("employees_tags").Select("employees_tags.id, employee_id, employees.name AS employee_name, tags_id, tags.name AS tags_name, tags.point").Joins("JOIN employees ON employees_tags.employee_id = employees.id").Joins("JOIN tags ON employees_tags.tags_id = tags.id").Where("employee_id = ?", c.Param("employee_id")).Scan(&employeetagjoin)
+	return c.JSON(http.StatusOK, employeetagjoin)
+}
+
+func getMatchTags(c echo.Context) error {
+	machtagjoin := []MatchTagJoin{}
+	database.DB.Table("employees_tags").Select("employees_tags.id, matche_id, matches.name AS matche_name, tags_id, tags.name AS tags_name, tags.point").Joins("JOIN matches ON employees_tags.matche_id = matches.id").Joins("JOIN tags ON employees_tags.tags_id = tags.id").Scan(&machtagjoin)
+	fmt.Print(machtagjoin)
+	return c.JSON(http.StatusOK, machtagjoin)
+}
+
 func main() {
 	e := echo.New()
 	database.Connect()
@@ -407,6 +502,14 @@ func main() {
 	//
 	e.GET("/groupmatch", getEmployeesMatchesJoins)
 	e.GET("/groupmatch/:employee_id", getEmployeesMatchesJoin)
+
+	//ガチャ
+	e.GET("/gacha/:employee_id", getGacha)
+
+	//タグ
+	e.GET("/tag", getTags)
+	e.GET("/employeetag/:employee_id", getEmployeeTags)
+	e.GET("/matchtag", getMatchTags)
 
 	e.Logger.Fatal(e.Start(":4000")) // コンテナ側の開放ポートと一緒にすること
 }

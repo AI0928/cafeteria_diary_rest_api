@@ -8,6 +8,8 @@ CREATE TABLE posts (
   `created_at` DATE
 );
 
+alter table posts default character set utf8mb4;
+
 INSERT INTO posts (employee_id, title) VALUES (1, '1のPOST');
 INSERT INTO posts (employee_id, title) VALUES (2, '2のPOST');
 INSERT INTO posts (employee_id, title) VALUES (3, '3のPOST');

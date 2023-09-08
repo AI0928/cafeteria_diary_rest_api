@@ -7,4 +7,6 @@ CREATE TABLE employees_matches (
   PRIMARY KEY (id)
 );
 
-INSERT INTO employees_matches (employee_id, group_id) VALUES (1, 1), (2, 2), (3, 3), (1, 2), (2, 3), (3, 1);
+alter table employees_matches default character set utf8mb4;
+
+INSERT INTO employees_matches (employee_id, group_id) VALUES (1, 1), (2, 2), (3, 3);

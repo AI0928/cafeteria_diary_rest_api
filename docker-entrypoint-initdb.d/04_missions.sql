@@ -5,13 +5,16 @@ CREATE TABLE missions (
   `employee_id` INT NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `description` TEXT NOT NULL,
-  `start_date` DATE NOT NULL,
-  `end_date` DATE NOT NULL,
+  `check_item` VARCHAR(255) NOT NULL,
+  `level` DECIMAL(5, 1),
   `status` VARCHAR(255) NOT NULL,
   PRIMARY KEY (id)
 );
 
-INSERT INTO missions (employee_id, name, description, start_date, end_date, status) VALUES (1, 'Mission 1', 'Mission 1 description', '2023-09-01', '2023-09-30', 'In progress');
-INSERT INTO missions (employee_id, name, description, start_date, end_date, status) VALUES (2, 'Mission 2', 'Mission 2 description', '2023-10-01', '2023-10-31', 'In progress');
-INSERT INTO missions (employee_id, name, description, start_date, end_date, status) VALUES (3, 'Mission 3', 'Mission 3 description', '2023-11-01', '2023-11-30', 'In progress');
-INSERT INTO missions (employee_id, name, description, start_date, end_date, status) VALUES (1, 'Mission 4', 'Mission 4 description', '2023-12-01', '2023-12-31', 'In progress');
+alter table missions default character set utf8mb4;
+
+INSERT INTO missions (employee_id, name, description, check_item, level, status) 
+VALUES (1, 'Mission 1', 'Mission 1 description', 'salinity', 2, 'success'),
+       (2, 'Mission 2', 'Mission 2 description', 'salinity', 2, 'Active'),
+       (3, 'Mission 3', 'Mission 3 description', 'energy', 500, 'Active'),
+       (1, 'Mission 4', 'Mission 4 description', 'energy', 500, 'Active');

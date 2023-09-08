@@ -11,7 +11,9 @@ CREATE TABLE matches (
   PRIMARY KEY (id)
 );
 
+alter table matches default character set utf8mb4;
+
 INSERT INTO matches (employee_id, group_id, name, description, date, status) 
-VALUES (1, 1, 'game', 'game', '2023-09-05', 'end'), 
+VALUES (1, 1, 'soccer+baseball', 'soccer+baseball', '2023-09-05', 'end'), 
 (2, 2, 'excel', 'excel', '2023-09-06', 'wanted'), 
-(3, 3, 'movie', 'movie', '2023-09-07', 'wanted');
+(3, 3, 'Golang+Vue', 'Golang+Vue', '2023-09-07', 'wanted');
