@@ -490,7 +490,6 @@ func main() {
 
 	//マッチング・グループ
 	e.GET("/match", getMatches)
-
 	e.PUT("/match/:id", updateMatch)
 	e.POST("/match", createMatch)
 	e.DELETE("/match/:id", deleteMatch)
