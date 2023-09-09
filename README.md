@@ -1,4 +1,4 @@
-# 社食日記アプリのrest_api
+# UMAIIアプリのrest_api
 
 ## 使用方法
 
@@ -27,6 +27,28 @@
 ### 社員の一覧取得
 
 #### GETリクエスト　URL:http://localhost:4040/employee
+
+#####    {
+#####        "id": 1,
+#####        "name": "ItouHirobumi",
+#####        "age": 30,
+#####        "gender": "male",
+#####        "mileage": 6
+#####    }
+
+### イベントマッチングの一覧取得
+
+#### GETリクエスト　URL:http://localhost:4040/match
+
+#####     {
+#####        "id": 1,
+#####        "employee_id": 1,
+#####        "group_id": 1,
+#####        "name": "soccer+baseball",
+#####        "description": "soccer+baseball",
+#####        "date": "2023-09-05",
+#####        "status": "end"
+#####    },
 
 ### 任意の社員が食べた料理一覧取得
 

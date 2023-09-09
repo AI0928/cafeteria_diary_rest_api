@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Food struct {
@@ -452,8 +453,21 @@ func getMatchTags(c echo.Context) error {
 	return c.JSON(http.StatusOK, machtagjoin)
 }
 
+func getHeathyFood(c echo.Context) error {
+	foods := []Food{}
+	database.DB.Find(&foods)
+	healtyfoods := []Food{}
+	for i, v := range foods {
+		if v.Salinity <= 2 || v.Energy <= 500 {
+			healtyfoods = append(healtyfoods, foods[i])
+		}
+	}
+	return c.JSON(http.StatusOK, healtyfoods)
+}
+
 func main() {
 	e := echo.New()
+	e.Use(middleware.CORS())
 	database.Connect()
 	sqlDB, _ := database.DB.DB()
 	defer sqlDB.Close()
@@ -509,6 +523,9 @@ func main() {
 	e.GET("/tag", getTags)
 	e.GET("/employeetag/:employee_id", getEmployeeTags)
 	e.GET("/matchtag", getMatchTags)
+
+	//
+	e.GET("/healthyfood", getHeathyFood)
 
 	e.Logger.Fatal(e.Start(":4000")) // コンテナ側の開放ポートと一緒にすること
 }
